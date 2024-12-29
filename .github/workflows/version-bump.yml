@@ -68,7 +68,7 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/ruipiresc/aura.git
           git add VERSION CHANGELOG.md
           git commit -m "ci: Increment version and update changelog"
           git push
-          echo "Version and Changelog updated and pushed to the repository"
