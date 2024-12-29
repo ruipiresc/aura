@@ -20,6 +20,8 @@ def webhook():
     # Extract the chat ID and text from the incoming message
     chat_id = data['message']['chat']['id']
     text = data['message']['text']
+    user_id = data["message"]["from"]["id"]  # Extract user ID
+    print(f"User ID: {user_id}")  # Print the user ID to the console
 
     # Echo the message back to the user
     send_message(chat_id, text)
