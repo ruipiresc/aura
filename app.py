@@ -1,8 +1,13 @@
 import os
 import requests
 from flask import Flask, request
+import redis
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
+
+# Connect to Redis using environment variables
+REDIS_URL = os.getenv("REDIS_URL")  # Ensure REDIS_URL is set in Railway's environment variables
+redis_client = redis.from_url(REDIS_URL)
 
 def get_version():
     with open("VERSION") as f:
@@ -19,6 +24,34 @@ SLACK_BOT_OWNER_ID = os.getenv("SLACK_BOT_OWNER_ID")
 # Set URLs for Telegram and Slack APIs
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 SLACK_API_URL = "https://slack.com/api"
+
+def store_railway_env_vars_on_redis():
+    #RAILWAY_PUBLIC_DOMAIN
+    redis_client.set("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_PUBLIC_DOMAIN"))
+    #RAILWAY_PRIVATE_DOMAIN
+    redis_client.set("RAILWAY_PRIVATE_DOMAIN", os.getenv("RAILWAY_PRIVATE_DOMAIN"))
+    #RAILWAY_PROJECT_NAME
+    redis_client.set("RAILWAY_PROJECT_NAME", os.getenv("RAILWAY_PROJECT_NAME"))
+    #RAILWAY_ENVIRONMENT_NAME
+    redis_client.set("RAILWAY_ENVIRONMENT_NAME", os.getenv("RAILWAY_ENVIRONMENT_NAME"))
+    #RAILWAY_SERVICE_NAME
+    redis_client.set("RAILWAY_SERVICE_NAME", os.getenv("RAILWAY_SERVICE_NAME"))
+    #RAILWAY_PROJECT_ID
+    redis_client.set("RAILWAY_PROJECT_ID", os.getenv("RAILWAY_PROJECT_ID"))
+    #RAILWAY_ENVIRONMENT_ID
+    redis_client.set("RAILWAY_ENVIRONMENT_ID", os.getenv("RAILWAY_ENVIRONMENT_ID"))
+    #RAILWAY_SERVICE_ID
+    redis_client.set("RAILWAY_SERVICE_ID", os.getenv("RAILWAY_SERVICE_ID"))
+    
+    # and print them
+    print("RAILWAY_PUBLIC_DOMAIN: " + redis_client.get("RAILWAY_PUBLIC_DOMAIN").decode())
+    print("RAILWAY_PRIVATE_DOMAIN: " + redis_client.get("RAILWAY_PRIVATE_DOMAIN").decode())
+    print("RAILWAY_PROJECT_NAME: " + redis_client.get("RAILWAY_PROJECT_NAME").decode())
+    print("RAILWAY_ENVIRONMENT_NAME: " + redis_client.get("RAILWAY_ENVIRONMENT_NAME").decode())
+    print("RAILWAY_SERVICE_NAME: " + redis_client.get("RAILWAY_SERVICE_NAME").decode())
+    print("RAILWAY_PROJECT_ID: " + redis_client.get("RAILWAY_PROJECT_ID").decode())
+    print("RAILWAY_ENVIRONMENT_ID: " + redis_client.get("RAILWAY_ENVIRONMENT_ID").decode())
+    print("RAILWAY_SERVICE_ID: " + redis_client.get("RAILWAY_SERVICE_ID").decode())
 
 def send_initial_messages():
     # Ensure the bot sends an initial message to both Telegram and Slack after 10 seconds
@@ -144,6 +177,7 @@ def send_message_to_slack(channel, text):
 if __name__ == '__main__':
     # Start the scheduler
     scheduler = BackgroundScheduler()
+    store_railway_env_vars_on_redis()
     
     # Schedule the job to run once, 10 seconds after the app starts
     scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
