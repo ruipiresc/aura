@@ -64,3 +64,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.17] - 2024-12-29
 - new bump version2
+
+## [0.2.18] - 2024-12-29
+- revert folders
