@@ -14,9 +14,9 @@ def get_version():
     with open("VERSION") as f:
         return f.read().strip()
     
-def acquire_lock():
+def acquire_lock(lock_name):
     # Create a lock with a unique name (e.g., "app_start_lock")
-    lock = redis_lock.Lock(redis_client, "app_start_lock")
+    lock = redis_lock.Lock(redis_client, lock_name)
     if lock.acquire(blocking=False):  # Try to acquire the lock without blocking
         return lock
     return None
@@ -162,12 +162,13 @@ if __name__ == '__main__':
     # Start the scheduler
     scheduler = BackgroundScheduler()
     
-    lock = acquire_lock()
+    lock = acquire_lock("send_initial_messages")
 
     if lock:
         print("Lock acquired. Proceeding with startup.")
         scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
         # Put your startup logic here (e.g., send initial messages)
+        release_lock(lock)
     else:
         print("Another instance has acquired the lock. Exiting.")
 
