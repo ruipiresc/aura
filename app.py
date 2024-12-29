@@ -1,6 +1,8 @@
 import os
 import requests
 from flask import Flask, request
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
 
 def get_version():
     with open("VERSION") as f:
@@ -17,6 +19,12 @@ SLACK_BOT_OWNER_ID = os.getenv("SLACK_BOT_OWNER_ID")
 # Set URLs for Telegram and Slack APIs
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 SLACK_API_URL = "https://slack.com/api"
+
+def send_initial_messages():
+    # Ensure the bot sends an initial message to both Telegram and Slack after 10 seconds
+    version_message = "Aura is now online and ready on version " + get_version()
+    send_message_to_telegram(TELEGRAM_BOT_OWNER_ID, version_message)
+    send_message_to_slack(SLACK_BOT_OWNER_ID, version_message)
 
 @app.route('/')
 def home():
@@ -111,6 +119,8 @@ def send_message_to_telegram(chat_id, text):
 
     if response.status_code != 200:
         print(f"Error sending Telegram message: {response.text}")
+    else:
+        print(f"Message sent to Telegram (chat_id: {chat_id}): {text}")
 
 def send_message_to_slack(channel, text):
     """Send a message to the specified Slack channel."""
@@ -123,19 +133,20 @@ def send_message_to_slack(channel, text):
         "channel": channel,
         "text": text
     }
+    print(f"Sending message to Slack channel: {channel}")  # Log the channel being used
     response = requests.post(url, headers=headers, json=payload)
 
     if response.status_code != 200 or not response.json().get("ok"):
         print(f"Error sending Slack message: {response.text}")
     else:
-        print(f"Slack message sent successfully: {text}")
+        print(f"Message sent to Slack (channel: {channel}): {text}")
 
 if __name__ == '__main__':
-    # Ensure the bot sends an initial message to both Telegram and Slack on startup
-    send_message_to_telegram(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready on version " + get_version())
+    # Start the scheduler
+    scheduler = BackgroundScheduler()
     
-    # Log the result of sending a message to Slack
-    slack_message = "Aura is now online and ready on version " + get_version()
-    send_message_to_slack(SLACK_BOT_OWNER_ID, slack_message)
+    # Schedule the job to run once, 10 seconds after the app starts
+    scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
+    scheduler.start()
 
     app.run(debug=True, host="0.0.0.0", port=5080)
