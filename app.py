@@ -2,6 +2,10 @@ import os
 import requests
 from flask import Flask, request
 
+def get_version():
+    with open("VERSION") as f:
+        return f.read().strip()
+
 app = Flask(__name__)
 
 # Load environment variables
@@ -13,7 +17,7 @@ TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
 @app.route('/')
 def home():
-    return "Aura Bot is running!"
+    return "Aura Bot is running on version " + get_version()
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -44,6 +48,6 @@ def send_message(chat_id, text):
         print(f"Error sending message: {response.text}")
 
 if __name__ == '__main__':
-    send_message(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready!")
+    send_message(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready on version " + get_version())
     
     app.run(debug=True, host="0.0.0.0", port=5080)
