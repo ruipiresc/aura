@@ -52,3 +52,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.13] - 2024-12-29
 - fixed bug
+
+## [0.2.14] - 2024-12-29
+- fixed bug with sleep
