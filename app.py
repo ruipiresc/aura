@@ -2,7 +2,7 @@ import os
 import requests
 from flask import Flask, request
 import redis
-from redis_lock import Lock
+import redis_lock
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 
@@ -15,8 +15,9 @@ def get_version():
         return f.read().strip()
     
 def acquire_lock():
-    lock = Lock(redis_client, "app_start_lock", expire=60)  # Lock expires after 60 seconds
-    if lock.acquire(blocking=True, timeout=10):  # Attempt to acquire the lock for 10 seconds
+    # Create a lock with a unique name (e.g., "app_start_lock")
+    lock = redis_lock.Lock(redis_client, "app_start_lock")
+    if lock.acquire(blocking=False):  # Try to acquire the lock without blocking
         return lock
     return None
 
