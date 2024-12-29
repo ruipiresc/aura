@@ -26,10 +26,13 @@ jobs:
           # Determine if it's a feature or bugfix branch
           if [[ "$BRANCH_NAME" == feature/* ]]; then
             echo "BUMP_TYPE=minor" >> $GITHUB_ENV
+            echo "Feature branch detected"
           elif [[ "$BRANCH_NAME" == bugfix/* ]]; then
             echo "BUMP_TYPE=patch" >> $GITHUB_ENV
+            echo "Bugfix branch detected"
           else
             echo "BUMP_TYPE=none" >> $GITHUB_ENV
+            echo "No version bump needed"
           fi
           
       - name: Increment Version Based on Branch
@@ -40,8 +43,10 @@ jobs:
           if [ "$BUMP_TYPE" == "minor" ]; then
             MINOR=$((MINOR + 1))
             PATCH=0
+            echo "Minor bump started"
           elif [ "$BUMP_TYPE" == "patch" ]; then
             PATCH=$((PATCH + 1))
+            echo "Patch bump started"
           fi
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "$NEW_VERSION" > VERSION
@@ -55,6 +60,7 @@ jobs:
           echo "" >> changelog_temp.md
           cat CHANGELOG.md >> changelog_temp.md
           mv changelog_temp.md CHANGELOG.md
+          echo "Changelog updated according to the latest commits"
 
       - name: Commit and Push Updated Version and Changelog
         if: env.BUMP_TYPE != 'none'
@@ -64,3 +70,4 @@ jobs:
           git add VERSION CHANGELOG.md
           git commit -m "ci: Increment version and update changelog"
           git push
+          echo "Version and Changelog updated and pushed to the repository"
