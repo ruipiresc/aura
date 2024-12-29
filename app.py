@@ -35,33 +35,63 @@ def webhook():
         return "Unsupported webhook source", 400
 
 def handle_telegram_webhook(data):
-    # Extract the chat ID and text from the incoming message
+    # Extract the chat ID, text, and user info from the incoming message
     chat_id = data['message']['chat']['id']
     text = data['message']['text']
     user_id = data["message"]["from"]["id"]  # Extract user ID
-    print(f"Telegram User ID: {user_id}")  # Print the user ID to the console
-
-    # Echo the message back to the user in Telegram and Slack
-    send_message_to_telegram(chat_id, text)
-    send_message_to_slack(SLACK_BOT_OWNER_ID, text)
+    username = data["message"]["from"].get("username", data["message"]["from"].get("first_name", "User"))  # Fallback to first_name if no username
+    
+    # Print the user ID for debugging
+    print(f"Telegram User ID: {user_id}, Username: {username}")
+    
+    # Format the message
+    formatted_message = f"You ({username}) said: {text}"
+    
+    # Echo the formatted message back to Telegram and Slack
+    send_message_to_telegram(chat_id, formatted_message)
+    send_message_to_slack(SLACK_BOT_OWNER_ID, formatted_message)
 
     return '', 200
 
 def handle_slack_webhook(data):
-    # Extract the text and channel from the incoming message
+    # Extract the text, user, and subtype from the incoming Slack message
     event = data.get('event', {})
     text = event.get('text', '')
     user_id = event.get('user', '')
     channel = event.get('channel', '')
     subtype = event.get('subtype', '')
-    print(f"Slack User ID: {user_id}, Channel: {channel}")
-    
+
     # Ignore messages sent by the bot itself (using the 'subtype' field)
     if subtype != 'bot_message':
-        # Echo the message back to Slack
-        send_message_to_slack(channel, text)
+        # Get the user's name or username from Slack API
+        user_info = get_slack_user_info(user_id)
+        username = user_info.get("real_name", "User")  # Use real_name if available, fallback to "User"
+
+        # Format the message
+        formatted_message = f"You ({username}) said: {text}"
+
+        # Echo the formatted message back to Slack
+        send_message_to_slack(channel, formatted_message)
 
     return '', 200
+
+def get_slack_user_info(user_id):
+    """Fetch user information from Slack API."""
+    url = f"{SLACK_API_URL}/users.info"
+    headers = {
+        "Authorization": f"Bearer {SLACK_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    params = {
+        "user": user_id
+    }
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        return response.json().get("user", {})
+    else:
+        print(f"Error fetching Slack user info: {response.text}")
+        return {}
 
 def send_message_to_telegram(chat_id, text):
     """Send a message back to the user via Telegram."""
