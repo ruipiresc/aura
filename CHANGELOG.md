@@ -72,4 +72,7 @@ All notable changes to this project will be documented here.
 - adding logs
 
 ## [0.2.20] - 2024-12-29
+- adding logs when skipping
+
+## [0.2.21] - 2024-12-29
 - telegram bug is fixed
