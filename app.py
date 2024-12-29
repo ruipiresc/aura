@@ -53,10 +53,13 @@ def handle_slack_webhook(data):
     text = event.get('text', '')
     user_id = event.get('user', '')
     channel = event.get('channel', '')
+    subtype = event.get('subtype', '')
     print(f"Slack User ID: {user_id}, Channel: {channel}")
-
-    # Echo the message back to Slack
-    send_message_to_slack(channel, text)
+    
+    # Ignore messages sent by the bot itself (using the 'subtype' field)
+    if subtype != 'bot_message':
+        # Echo the message back to Slack
+        send_message_to_slack(channel, text)
 
     return '', 200
 
