@@ -3,7 +3,8 @@ name: Version Bumping and Changelog Update
 on:
   push:
     branches:
-      - main
+      - 'feature/*'
+      - 'bugfix/*'
 
 jobs:
   bump-version:
