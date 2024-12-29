@@ -21,7 +21,7 @@ jobs:
         id: set_bump_type
         run: |
           # Get the current branch name
-          BRANCH_NAME="${GITHUB_REF##*/}"
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           echo "Branch name: $BRANCH_NAME"
 
           # Determine if it's a feature or bugfix branch
