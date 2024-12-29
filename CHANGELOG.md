@@ -34,3 +34,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.7] - 2024-12-29
 - adding redis
+
+## [0.2.8] - 2024-12-29
+- adding redis check if env changed
