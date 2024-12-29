@@ -162,16 +162,13 @@ if __name__ == '__main__':
     # Start the scheduler
     scheduler = BackgroundScheduler()
     
-    lock = acquire_lock("send_initial_messages")
+    # create a lock name with version in it
+    lock_name = f"send_initial_messages_{get_version()}"
+    lock = acquire_lock(lock_name)
 
     if lock:
         print("Lock acquired. Proceeding with startup.")
         scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
-        # Put your startup logic here (e.g., send initial messages)
-        
-        # sleep for 10 seconds
-        time.sleep(60)
-        release_lock(lock)
     else:
         print("Another instance has acquired the lock. Exiting.")
 
