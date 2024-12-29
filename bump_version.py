@@ -15,12 +15,14 @@ major, minor, patch = map(int, current_version.split("."))
 
 # Check bump type and ensure changelog message is provided
 if len(sys.argv) < 3:
-    print("Usage: python bump_version.py <bump_type> <changelog_message>")
+    print("Usage: python script.py <bump_type> <changelog_message>")
     print("Valid bump types: patch, minor, major")
     sys.exit(1)
 
 bump_type = sys.argv[1]
 changelog_message = sys.argv[2]
+
+
 
 # Apply the bump
 if bump_type == "patch":
@@ -39,6 +41,24 @@ else:
 # Generate new version string
 new_version = f"{major}.{minor}.{patch}"
 
+# Get the current branch name
+current_branch = (
+    subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    .strip()
+    .decode("utf-8")
+)
+
+# Only create a new branch if not on the main branch
+if current_branch == "main":
+    # Extract the branch name from the first four words of the changelog message
+    new_branch_name = "-".join(changelog_message.split()[:4]).lower()
+    subprocess.run(["git", "checkout", "-b", new_branch_name])
+    print(f"Created and switched to new branch: {new_branch_name}")
+    branch_name = new_branch_name
+else:
+    branch_name = current_branch
+    print(f"On main branch, proceeding without creating a new branch.")
+
 # Update the VERSION file
 with open(VERSION_FILE, "w") as f:
     f.write(new_version)
@@ -48,7 +68,7 @@ with open(CHANGELOG_FILE, "a") as f:
     f.write(f"\n## [{new_version}] - {datetime.today().strftime('%Y-%m-%d')}\n")
     f.write(f"- {changelog_message}\n")
 
-# Add all changes (staged or unstaged)
+# Add all changes
 subprocess.run(["git", "add", "."])
 
 # Commit the changes
@@ -57,7 +77,8 @@ subprocess.run(["git", "commit", "-m", f"v{new_version}: {changelog_message}"])
 # Create a new Git tag for the updated version
 subprocess.run(["git", "tag", f"v{new_version}"])
 
-# Push all changes and the new tag to the repository
-subprocess.run(["git", "push", "--follow-tags"])
+# Push the branch and the new tag to the repository
+subprocess.run(["git", "push", "--set-upstream", "origin", branch_name])
+subprocess.run(["git", "push", "--tags"])
 
-print(f"Version bumped to {new_version}, changelog updated, and tag created.")
+print(f"Version bumped to {new_version}, changelog updated, branch '{branch_name}' handled, and tag pushed.")
