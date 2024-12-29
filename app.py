@@ -4,8 +4,11 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-# Get your Telegram bot token from environment variables
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+# Load environment variables
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_OWNER_ID = os.getenv("TELEGRAM_BOT_OWNER_ID")
+
+# Set url for Telegram API
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 @app.route('/')
@@ -27,6 +30,11 @@ def webhook():
     send_message(chat_id, text)
 
     return '', 200
+
+@app.before_first_request
+def notify_owner():
+    if TELEGRAM_BOT_OWNER_ID:
+        send_message(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready!")
 
 def send_message(chat_id, text):
     """Send a message back to the user via Telegram"""
