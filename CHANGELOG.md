@@ -37,3 +37,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.8] - 2024-12-29
 - adding redis check if env changed
+
+## [0.2.9] - 2024-12-29
+- adding redis locks
