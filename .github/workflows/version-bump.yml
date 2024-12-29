@@ -32,7 +32,7 @@ jobs:
             echo "Bugfix branch detected"
           else
             echo "BUMP_TYPE=none" >> $GITHUB_ENV
-            echo "No version bump needed"
+            echo "No version bump needed, branch name is: $BRANCH_NAME"
           fi
           
       - name: Increment Version Based on Branch
