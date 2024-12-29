@@ -73,13 +73,7 @@ def handle_telegram_webhook(data):
     # Extract the chat ID, text, and user info from the incoming message
     chat_id = data['message']['chat']['id']
     text = data['message']['text']
-    user_id = data["message"]["from"]["id"]  # Extract user ID
     username = data["message"]["from"].get("username", data["message"]["from"].get("first_name", "User"))  # Fallback to first_name if no username
-
-    # Avoid responding to the bot's own messages or messages from 'Lola'
-    if user_id == int(TELEGRAM_BOT_OWNER_ID) or username.lower() == "lola":
-        print("Ignoring bot's own messages or messages from 'Lola'.")
-        return '', 200  # Ignore bot's own messages and messages from "Lola"
 
     # Format the message
     formatted_message = f"You ({username}) said: {text}"
