@@ -31,11 +31,6 @@ def webhook():
 
     return '', 200
 
-@app.before_first_request
-def notify_owner():
-    if TELEGRAM_BOT_OWNER_ID:
-        send_message(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready!")
-
 def send_message(chat_id, text):
     """Send a message back to the user via Telegram"""
     url = f"{TELEGRAM_API_URL}/sendMessage"
@@ -49,4 +44,6 @@ def send_message(chat_id, text):
         print(f"Error sending message: {response.text}")
 
 if __name__ == '__main__':
+    send_message(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready!")
+    
     app.run(debug=True, host="0.0.0.0", port=5080)
