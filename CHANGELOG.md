@@ -67,3 +67,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.18] - 2024-12-29
 - revert folders
+
+## [0.2.19] - 2024-12-29
+- adding logs
