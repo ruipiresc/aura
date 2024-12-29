@@ -13,3 +13,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.0] - 2024-12-29
 - now with echo bot for slack
+
+## [0.2.1] - 2024-12-29
+- Fixed echo of bot messages on slack
