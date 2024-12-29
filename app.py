@@ -32,7 +32,7 @@ def webhook():
     return '', 200
 
 def send_message(chat_id, text):
-    """Send a message back to the user via Telegram"""
+    """Send a message back to the user via Telegram."""
     url = f"{TELEGRAM_API_URL}/sendMessage"
     params = {
         'chat_id': chat_id,
