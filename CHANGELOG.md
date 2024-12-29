@@ -76,3 +76,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.21] - 2024-12-29
 - telegram bug is fixed
+
+## [0.2.22] - 2024-12-29
+- script updated
