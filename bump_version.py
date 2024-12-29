@@ -48,15 +48,16 @@ with open(CHANGELOG_FILE, "a") as f:
     f.write(f"\n## [{new_version}] - {datetime.today().strftime('%Y-%m-%d')}\n")
     f.write(f"- {changelog_message}\n")
 
+# Add all changes (staged or unstaged)
+subprocess.run(["git", "add", "."])
+
 # Commit the changes
-subprocess.run(["git", "add", VERSION_FILE, CHANGELOG_FILE])
-subprocess.run(["git", "commit", "-m", f"ci: Bump version to {new_version}"])
+subprocess.run(["git", "commit", "-m", f"v{new_version}: {changelog_message}"])
 
 # Create a new Git tag for the updated version
 subprocess.run(["git", "tag", f"v{new_version}"])
-subprocess.run(["git", "push", "origin", f"v{new_version}"])
 
-# Push changes to the repository
-subprocess.run(["git", "push"])
+# Push all changes and the new tag to the repository
+subprocess.run(["git", "push", "--follow-tags"])
 
 print(f"Version bumped to {new_version}, changelog updated, and tag created.")
