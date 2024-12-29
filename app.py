@@ -40,13 +40,14 @@ def handle_telegram_webhook(data):
     text = data['message']['text']
     user_id = data["message"]["from"]["id"]  # Extract user ID
     username = data["message"]["from"].get("username", data["message"]["from"].get("first_name", "User"))  # Fallback to first_name if no username
-    
-    # Print the user ID for debugging
-    print(f"Telegram User ID: {user_id}, Username: {username}")
-    
+
+    # Avoid responding to the bot's own messages or messages from 'Lola'
+    if user_id == int(TELEGRAM_BOT_OWNER_ID) or username.lower() == "lola":
+        return '', 200  # Ignore bot's own messages and messages from "Lola"
+
     # Format the message
     formatted_message = f"You ({username}) said: {text}"
-    
+
     # Echo the formatted message back to Telegram and Slack
     send_message_to_telegram(chat_id, formatted_message)
     send_message_to_slack(SLACK_BOT_OWNER_ID, formatted_message)
@@ -61,17 +62,23 @@ def handle_slack_webhook(data):
     channel = event.get('channel', '')
     subtype = event.get('subtype', '')
 
-    # Ignore messages sent by the bot itself (using the 'subtype' field)
-    if subtype != 'bot_message':
-        # Get the user's name or username from Slack API
-        user_info = get_slack_user_info(user_id)
-        username = user_info.get("real_name", "User")  # Use real_name if available, fallback to "User"
+    # Avoid responding to the bot's own messages or messages from 'Lola'
+    if subtype == 'bot_message':  # Check if the message is sent by the bot
+        return '', 200  # Ignore bot's own messages
 
-        # Format the message
-        formatted_message = f"You ({username}) said: {text}"
+    # Get the user's name or username from Slack API
+    user_info = get_slack_user_info(user_id)
+    username = user_info.get("real_name", "User")  # Use real_name if available, fallback to "User"
 
-        # Echo the formatted message back to Slack
-        send_message_to_slack(channel, formatted_message)
+    # Avoid responding to messages from 'Lola'
+    if username.lower() == "lola":
+        return '', 200  # Skip if the username is "Lola"
+
+    # Format the message
+    formatted_message = f"You ({username}) said: {text}"
+
+    # Echo the formatted message back to Slack
+    send_message_to_slack(channel, formatted_message)
 
     return '', 200
 
