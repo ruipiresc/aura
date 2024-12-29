@@ -72,3 +72,5 @@ jobs:
           git add VERSION CHANGELOG.md
           git commit -m "ci: Increment version and update changelog"
           git push
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Make sure this is set correctly
