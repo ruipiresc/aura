@@ -9,7 +9,7 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_OWNER_ID = os.getenv("TELEGRAM_BOT_OWNER_ID")
 
 # Set url for Telegram API
-TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
 @app.route('/')
 def home():
