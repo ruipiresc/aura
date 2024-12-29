@@ -1,4 +1,4 @@
-import os
+import os, time
 import requests
 from flask import Flask, request
 import redis
@@ -168,6 +168,9 @@ if __name__ == '__main__':
         print("Lock acquired. Proceeding with startup.")
         scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
         # Put your startup logic here (e.g., send initial messages)
+        
+        # sleep for 10 seconds
+        time.sleep(60)
         release_lock(lock)
     else:
         print("Another instance has acquired the lock. Exiting.")
