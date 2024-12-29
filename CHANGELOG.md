@@ -31,3 +31,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.6] - 2024-12-29
 - scheduling initial message
+
+## [0.2.7] - 2024-12-29
+- adding redis
