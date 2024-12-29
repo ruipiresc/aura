@@ -78,7 +78,7 @@ def handle_telegram_webhook(data):
 
     # Avoid responding to the bot's own messages or messages from 'Lola'
     if user_id == int(TELEGRAM_BOT_OWNER_ID) or username.lower() == "lola":
-        print("Ignoring bot's own messages or messages from 'Lola'.")
+        print(f"Ignoring bot's own messages or messages from 'Lola'. user_id: {user_id}, username: {username}")
         return '', 200  # Ignore bot's own messages and messages from "Lola"
 
     # Format the message
