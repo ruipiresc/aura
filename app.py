@@ -2,6 +2,7 @@ import os
 import requests
 from flask import Flask, request
 import redis
+from redis_lock import Lock
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
 
@@ -12,6 +13,16 @@ redis_client = redis.from_url(REDIS_URL)
 def get_version():
     with open("VERSION") as f:
         return f.read().strip()
+    
+def acquire_lock():
+    lock = Lock(redis_client, "app_start_lock", expire=60)  # Lock expires after 60 seconds
+    if lock.acquire(blocking=True, timeout=10):  # Attempt to acquire the lock for 10 seconds
+        return lock
+    return None
+
+def release_lock(lock):
+    if lock:
+        lock.release()
 
 app = Flask(__name__)
 
@@ -24,69 +35,6 @@ SLACK_BOT_OWNER_ID = os.getenv("SLACK_BOT_OWNER_ID")
 # Set URLs for Telegram and Slack APIs
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 SLACK_API_URL = "https://slack.com/api"
-
-def store_railway_env_vars_on_redis():
-    #RAILWAY_PUBLIC_DOMAIN
-    redis_client.set("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_PUBLIC_DOMAIN"))
-    #RAILWAY_PRIVATE_DOMAIN
-    redis_client.set("RAILWAY_PRIVATE_DOMAIN", os.getenv("RAILWAY_PRIVATE_DOMAIN"))
-    #RAILWAY_PROJECT_NAME
-    redis_client.set("RAILWAY_PROJECT_NAME", os.getenv("RAILWAY_PROJECT_NAME"))
-    #RAILWAY_ENVIRONMENT_NAME
-    redis_client.set("RAILWAY_ENVIRONMENT_NAME", os.getenv("RAILWAY_ENVIRONMENT_NAME"))
-    #RAILWAY_SERVICE_NAME
-    redis_client.set("RAILWAY_SERVICE_NAME", os.getenv("RAILWAY_SERVICE_NAME"))
-    #RAILWAY_PROJECT_ID
-    redis_client.set("RAILWAY_PROJECT_ID", os.getenv("RAILWAY_PROJECT_ID"))
-    #RAILWAY_ENVIRONMENT_ID
-    redis_client.set("RAILWAY_ENVIRONMENT_ID", os.getenv("RAILWAY_ENVIRONMENT_ID"))
-    #RAILWAY_SERVICE_ID
-    redis_client.set("RAILWAY_SERVICE_ID", os.getenv("RAILWAY_SERVICE_ID"))
-    
-    # and print them
-    print("RAILWAY_PUBLIC_DOMAIN: " + redis_client.get("RAILWAY_PUBLIC_DOMAIN").decode())
-    print("RAILWAY_PRIVATE_DOMAIN: " + redis_client.get("RAILWAY_PRIVATE_DOMAIN").decode())
-    print("RAILWAY_PROJECT_NAME: " + redis_client.get("RAILWAY_PROJECT_NAME").decode())
-    print("RAILWAY_ENVIRONMENT_NAME: " + redis_client.get("RAILWAY_ENVIRONMENT_NAME").decode())
-    print("RAILWAY_SERVICE_NAME: " + redis_client.get("RAILWAY_SERVICE_NAME").decode())
-    print("RAILWAY_PROJECT_ID: " + redis_client.get("RAILWAY_PROJECT_ID").decode())
-    print("RAILWAY_ENVIRONMENT_ID: " + redis_client.get("RAILWAY_ENVIRONMENT_ID").decode())
-    print("RAILWAY_SERVICE_ID: " + redis_client.get("RAILWAY_SERVICE_ID").decode())
-
-def did_env_vars_change() -> bool:
-    #RAILWAY_PUBLIC_DOMAIN
-    if redis_client.get("RAILWAY_PUBLIC_DOMAIN") != os.getenv("RAILWAY_PUBLIC_DOMAIN"):
-        print("RAILWAY_PUBLIC_DOMAIN changed")
-        return True
-    #RAILWAY_PRIVATE_DOMAIN
-    if redis_client.get("RAILWAY_PRIVATE_DOMAIN") != os.getenv("RAILWAY_PRIVATE_DOMAIN"):
-        print("RAILWAY_PRIVATE_DOMAIN changed")
-        return True
-    #RAILWAY_PROJECT_NAME
-    if redis_client.get("RAILWAY_PROJECT_NAME") != os.getenv("RAILWAY_PROJECT_NAME"):
-        print("RAILWAY_PROJECT_NAME changed")
-        return True
-    #RAILWAY_ENVIRONMENT_NAME
-    if redis_client.get("RAILWAY_ENVIRONMENT_NAME") != os.getenv("RAILWAY_ENVIRONMENT_NAME"):
-        print("RAILWAY_ENVIRONMENT_NAME changed")
-        return True
-    #RAILWAY_SERVICE_NAME
-    if redis_client.get("RAILWAY_SERVICE_NAME") != os.getenv("RAILWAY_SERVICE_NAME"):
-        print("RAILWAY_SERVICE_NAME changed")
-        return True
-    #RAILWAY_PROJECT_ID
-    if redis_client.get("RAILWAY_PROJECT_ID") != os.getenv("RAILWAY_PROJECT_ID"):
-        print("RAILWAY_PROJECT_ID changed")
-        return True
-    #RAILWAY_ENVIRONMENT_ID
-    if redis_client.get("RAILWAY_ENVIRONMENT_ID") != os.getenv("RAILWAY_ENVIRONMENT_ID"):
-        print("RAILWAY_ENVIRONMENT_ID changed")
-        return True
-    #RAILWAY_SERVICE_ID
-    if redis_client.get("RAILWAY_SERVICE_ID") != os.getenv("RAILWAY_SERVICE_ID"):
-        print("RAILWAY_SERVICE_ID changed")
-        return True
-    return False
 
 def send_initial_messages():
     # Ensure the bot sends an initial message to both Telegram and Slack after 10 seconds
@@ -213,10 +161,15 @@ if __name__ == '__main__':
     # Start the scheduler
     scheduler = BackgroundScheduler()
     
-    if did_env_vars_change():
-        store_railway_env_vars_on_redis()
-        # Schedule the job to run once, 10 seconds after the app starts
+    lock = acquire_lock()
+
+    if lock:
+        print("Lock acquired. Proceeding with startup.")
         scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
+        # Put your startup logic here (e.g., send initial messages)
+    else:
+        print("Another instance has acquired the lock. Exiting.")
+
     scheduler.start()
 
     app.run(debug=True, host="0.0.0.0", port=5080)
