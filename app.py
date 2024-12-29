@@ -24,6 +24,9 @@ def webhook():
     # Extract the chat ID and text from the incoming message
     chat_id = data['message']['chat']['id']
     text = data['message']['text']
+    
+    # print the message
+    print(f"Message from {chat_id}: {text}")
 
     # Echo the message back to the user
     send_message(chat_id, text)
