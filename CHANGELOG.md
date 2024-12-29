@@ -8,3 +8,6 @@ All notable changes to this project will be documented here.
 
 ## [0.1.2] - 2024-12-29
 - Fixed bug
+
+## [0.1.3] - 2024-12-29
+- Fixed bug 2
