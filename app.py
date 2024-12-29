@@ -127,9 +127,15 @@ def send_message_to_slack(channel, text):
 
     if response.status_code != 200 or not response.json().get("ok"):
         print(f"Error sending Slack message: {response.text}")
+    else:
+        print(f"Slack message sent successfully: {text}")
 
 if __name__ == '__main__':
+    # Ensure the bot sends an initial message to both Telegram and Slack on startup
     send_message_to_telegram(TELEGRAM_BOT_OWNER_ID, "Aura is now online and ready on version " + get_version())
-    send_message_to_slack(SLACK_BOT_OWNER_ID, "Aura is now online and ready on version " + get_version())
+    
+    # Log the result of sending a message to Slack
+    slack_message = "Aura is now online and ready on version " + get_version()
+    send_message_to_slack(SLACK_BOT_OWNER_ID, slack_message)
 
     app.run(debug=True, host="0.0.0.0", port=5080)
