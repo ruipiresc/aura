@@ -53,6 +53,41 @@ def store_railway_env_vars_on_redis():
     print("RAILWAY_ENVIRONMENT_ID: " + redis_client.get("RAILWAY_ENVIRONMENT_ID").decode())
     print("RAILWAY_SERVICE_ID: " + redis_client.get("RAILWAY_SERVICE_ID").decode())
 
+def did_env_vars_change() -> bool:
+    #RAILWAY_PUBLIC_DOMAIN
+    if redis_client.get("RAILWAY_PUBLIC_DOMAIN") != os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+        print("RAILWAY_PUBLIC_DOMAIN changed")
+        return True
+    #RAILWAY_PRIVATE_DOMAIN
+    if redis_client.get("RAILWAY_PRIVATE_DOMAIN") != os.getenv("RAILWAY_PRIVATE_DOMAIN"):
+        print("RAILWAY_PRIVATE_DOMAIN changed")
+        return True
+    #RAILWAY_PROJECT_NAME
+    if redis_client.get("RAILWAY_PROJECT_NAME") != os.getenv("RAILWAY_PROJECT_NAME"):
+        print("RAILWAY_PROJECT_NAME changed")
+        return True
+    #RAILWAY_ENVIRONMENT_NAME
+    if redis_client.get("RAILWAY_ENVIRONMENT_NAME") != os.getenv("RAILWAY_ENVIRONMENT_NAME"):
+        print("RAILWAY_ENVIRONMENT_NAME changed")
+        return True
+    #RAILWAY_SERVICE_NAME
+    if redis_client.get("RAILWAY_SERVICE_NAME") != os.getenv("RAILWAY_SERVICE_NAME"):
+        print("RAILWAY_SERVICE_NAME changed")
+        return True
+    #RAILWAY_PROJECT_ID
+    if redis_client.get("RAILWAY_PROJECT_ID") != os.getenv("RAILWAY_PROJECT_ID"):
+        print("RAILWAY_PROJECT_ID changed")
+        return True
+    #RAILWAY_ENVIRONMENT_ID
+    if redis_client.get("RAILWAY_ENVIRONMENT_ID") != os.getenv("RAILWAY_ENVIRONMENT_ID"):
+        print("RAILWAY_ENVIRONMENT_ID changed")
+        return True
+    #RAILWAY_SERVICE_ID
+    if redis_client.get("RAILWAY_SERVICE_ID") != os.getenv("RAILWAY_SERVICE_ID"):
+        print("RAILWAY_SERVICE_ID changed")
+        return True
+    return False
+
 def send_initial_messages():
     # Ensure the bot sends an initial message to both Telegram and Slack after 10 seconds
     version_message = "Aura is now online and ready on version " + get_version()
@@ -177,10 +212,11 @@ def send_message_to_slack(channel, text):
 if __name__ == '__main__':
     # Start the scheduler
     scheduler = BackgroundScheduler()
-    store_railway_env_vars_on_redis()
     
-    # Schedule the job to run once, 10 seconds after the app starts
-    scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
+    if did_env_vars_change():
+        store_railway_env_vars_on_redis()
+        # Schedule the job to run once, 10 seconds after the app starts
+        scheduler.add_job(send_initial_messages, 'date', run_date=datetime.now() + timedelta(seconds=10))
     scheduler.start()
 
     app.run(debug=True, host="0.0.0.0", port=5080)
