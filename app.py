@@ -23,6 +23,9 @@ def webhook():
     
     # print the message
     print(f"Message from {chat_id}: {text}")
+    
+    # print the first 5 chars of the bot token
+    print(f"Bot token: {TELEGRAM_TOKEN[:5]}")
 
     # Echo the message back to the user
     send_message(chat_id, text)
