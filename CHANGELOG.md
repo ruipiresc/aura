@@ -79,3 +79,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.24] - 2024-12-29
 - script updated
+
+## [0.2.25] - 2024-12-29
+- creating folders again
