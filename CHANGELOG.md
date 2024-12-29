@@ -45,4 +45,7 @@ All notable changes to this project will be documented here.
 - adding different redis locks
 
 ## [0.2.11] - 2024-12-29
+- changing folders
+
+## [0.2.12] - 2024-12-29
 - fixed bug
