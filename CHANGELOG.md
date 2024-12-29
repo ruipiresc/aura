@@ -19,3 +19,6 @@ All notable changes to this project will be documented here.
 
 ## [0.2.2] - 2024-12-29
 - More context on echo
+
+## [0.2.3] - 2024-12-29
+- another attempt to fix the bug
